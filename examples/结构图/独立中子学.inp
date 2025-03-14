@@ -1,0 +1,76 @@
+程序启动
+    │
+    ▼
+加载主输入卡 (neutronics.i)
+    │
+    ▼
+初始化 ReactorControl (calc_type=1)
+    │
+    ▼
+从 Fortran 获取燃耗信息
+    │
+    ▼
+验证参数与输入卡匹配
+    │
+    ▼
+┌─────────────── 燃耗步循环 ─────────────────────────────────┐
+│   │                                                        │
+│   ▼                                                        │
+│ 设置当前燃耗步                                              │
+│   │                                                        │
+│   ▼                                                        │
+│ 重置所有传输控制器                                          │
+│ (TransferControlPostprocessor 值设为 0)                    │
+│   │                                                        │
+│   ▼                                                        │
+│ 执行 a1 预处理 (a1_preprocess_)                            │
+│   │                                                        │
+│   ▼                                                        │
+│ ┌─── 是否为第一步? ───┐                                     │
+│ │                    │                                     │
+│ ▼ 是                 ▼ 否                                  │
+│ 执行中子学计算         执行 a2 预处理                         │
+│ (b1_standalone)      (a2_preprocess_)                     │
+│                       │                                    │
+│                       ▼                                    │
+│                     执行第一轮中子学计算                      │
+│                     (b1_standalone)                        │
+│                       │                                    │
+│                       ▼                                    │
+│                     执行 a3 预处理                           │
+│                     (a3_preprocess_)                       │
+│                       │                                    │
+│                       ▼                                    │
+│                     执行第二轮中子学计算                      │
+│                     (b1_standalone)                        │
+│   │                   │                                    │
+│   └───────────────────┘                                    │
+│   │                                                        │
+│   ▼                                                        │
+│ 激活功率传输控制器                                           │
+│ (power_to_b2_control TransferControlPostprocessor 值设为 1) │
+│   │                                                        │
+│   ▼                                                        │
+│ 执行功率分布传输                                             │
+│ (power_from_b1_standalone)                                 │
+│   │                                                        │
+│   ▼                                                        │
+│ 禁用功率传输控制器                                           │
+│ (power_to_b2_control TransferControlPostprocessor 值设为 0) │
+│   │                                                        │
+│   ▼                                                        │
+│ 执行 c1 后处理 (c1_postprocess_)                            │
+│   │                                                        │
+│   ▼                                                        │
+│ 保存计算结果                                                 │
+│   │                                                        │
+│   ▼                                                        │
+│ 当前步 +1                                                   │
+│   │                                                        │
+│   ▼                                                        │
+│ ┌─── 所有步骤完成? ───┐                                      │
+│ │                    │                                     │
+│ ▼ 否                 ▼ 是                                  │
+└─┘                    │                                     │
+                       ▼                                     │
+                     计算结束                                  │

@@ -1,0 +1,61 @@
+执行核热耦合 (executeCoupledB2B1)
+    │
+    ▼
+初始化迭代计数器 (iter = 0)
+    │
+    ▼
+重置温度收敛检查器
+(TemperatureConvergencePostprocessor::reset 清空_old_temperature)
+    │
+    ▼
+┌─────────────── 耦合迭代循环 ─────────────────────────────────────────────┐
+│   │                                                                      │
+│   ▼                                                                      │
+│ 迭代次数 +1 (iter++)                                                      │
+│   │                                                                      │
+│   ▼                                                                      │
+│ 执行热工计算 (execMultiApp('b2'))                                         │
+│   │                                                                      │
+│   ▼                                                                      │
+│ 激活温度传输控制器                                                          │
+│ (temp_to_b1_control TransferControlPostprocessor 值设为 1)                │
+│   │                                                                      │
+│   ▼                                                                      │
+│ 传输温度场 (执行 temp_to_b1)                                                │
+│   │                                                                      │
+│   ▼                                                                      │
+│ 禁用温度传输控制器                                                          │
+│ (temp_to_b1_control TransferControlPostprocessor 值设为 0)                │
+│   │                                                                      │
+│   ▼                                                                      │
+│ 执行中子学计算 (execMultiApp('b1'))                                        │
+│   │                                                                      │
+│   ▼                                                                      │
+│ 激活功率传输控制器                                                          │
+│ (power_to_b2_control TransferControlPostprocessor 值设为 1)               │
+│   │                                                                      │
+│   ▼                                                                      │
+│ 传输功率分布 (执行 power_to_b2)                                             │
+│   │                                                                      │
+│   ▼                                                                      │
+│ 禁用功率传输控制器                                                          │
+│ (power_to_b2_control TransferControlPostprocessor 值设为 0)               │
+│   │                                                                      │
+│   ▼                                                                      │
+│ 执行温度场收敛性检查                                                         │
+│ (TemperatureConvergencePostprocessor::getValue)                          │
+│   │                                                                      │
+│   ▼                                                                      │
+│ ┌─── 是否收敛? ───┐                                                        │
+│ │ (rel_error < _convergence_tol) │                                       │
+│ │                 │                                                      │
+│ ▼ 否              ▼ 是                                                    │
+│ ┌─── 达到最大迭代次数? ───┐  │                                              │
+│ │   (iter >= _max_iterations)  │  │                                      │
+│ │                       │  │                                             │
+│ ▼ 否                    ▼ 是│                                             │
+│ │                       │  │                                             │
+└─┘                       └──┘                                             │
+                          │                                                │
+                          ▼                                                │
+                        耦合计算完成                                          │

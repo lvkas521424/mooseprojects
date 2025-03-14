@@ -1,0 +1,24 @@
+调用 ConditionalMultiAppCopyTransfer::execute()
+    │
+    ▼
+检查传输状态 (shouldTransfer())
+    │
+    ▼
+┌─── TransferControlPostprocessor 值是否为 1? ───┐
+│                                              │
+▼ 否                                           ▼ 是
+│                                              │
+│                                              ▼
+│                                            获取源变量数据
+│                                              │
+│                                              ▼
+│                                            获取目标变量
+│                                              │
+│                                              ▼
+│                                            检查数据维度匹配
+│                                              │
+│                                              ▼
+│                                            复制数据
+│                                              │
+│                                              ▼
+└──────────────────────────────────────────→ 返回

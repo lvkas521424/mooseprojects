@@ -7,14 +7,39 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "multiapp2TestApp.h"
-#include "MooseMain.h"
+/****************************************************************/
+/*                  Reactor Physics Application                 */
+/*                        Main Program                          */
+/*              堆物理应用程序 - 主程序入口                     */
+/****************************************************************/
 
-// Begin the main program.
-int
-main(int argc, char * argv[])
+#include "mooseprojectsApp.h"
+#include "MooseInit.h"
+#include "Moose.h"
+#include "MooseApp.h"
+#include "AppFactory.h"
+
+// C++ Standard Library
+// C++标准库
+#include <iostream>
+
+int main(int argc, char * argv[])
 {
-  return Moose::main<multiapp2TestApp>(argc, argv);
-
-  std::cout << "Finish Calculation!" << std::endl;
+  // Initialize MPI and MOOSE
+  // 初始化MPI和MOOSE
+  MooseInit init(argc, argv);
+  
+  // Register applications
+  // 注册应用程序
+  mooseprojectsApp::registerApps();
+  
+  // Create application instance
+  // 创建应用程序实例
+  std::shared_ptr<MooseApp> app = AppFactory::createAppShared("mooseprojectsApp", argc, argv);
+  
+  // Execute application
+  // 执行应用程序
+  app->run();
+  
+  return 0;
 }

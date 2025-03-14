@@ -1,0 +1,51 @@
+TemperatureConvergencePostprocessor 初始化
+    │
+    ▼
+设置 _is_first_iteration = true
+    │
+    ▼
+┌─────────────── 应用程序启动 ─────────────────┐
+│   │                                        │
+│   ▼                                        │
+│ 开始核热耦合计算                              │
+│   │                                        │
+│   ▼                                        │
+│ 调用 reset() 方法                            │
+│ 清空 _old_temperature 和 _current_temperature │
+│ 设置 _is_first_iteration = true              │
+│                                            │
+└────────────────────────────────────────────┘
+    │
+    ▼
+┌─────────────── 每次耦合迭代 ─────────────────┐
+│   │                                       │
+│   ▼                                       │
+│ 执行 initialize() 方法                      │
+│ 获取当前温度场数据                            │
+│   │                                       │
+│   ▼                                       │
+│ ┌─── 是首次迭代? ───┐                       │
+│ │                  │                      │
+│ ▼ 是               ▼ 否                    │
+│ 将当前温度设为旧温度   保留旧温度不变           │
+│ (_old_temperature  │                      │
+│  = _current_temperature) │                │
+│   │                │                      │
+│   └────────────────┘                      │
+│   │                                       │
+│   ▼                                       │
+│ 迭代完成后调用 getValue()                    │
+│   │                                       │
+│   ▼                                       │
+│ 计算温度场相对变化                            │
+│ (computeRelativeChange)                   │
+│   │                                       │
+│   ▼                                       │
+│ 返回相对误差值                               │
+│ (供 ReactorControl 判断是否收敛)             │
+│   │                                       │
+│   ▼                                       │
+│ 更新旧温度场数据                              │
+│ (_old_temperature = _current_temperature)  │
+│                                           │
+└───────────────────────────────────────────┘

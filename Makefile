@@ -66,3 +66,24 @@ include            $(FRAMEWORK_DIR)/app.mk
 
 ###############################################################################
 # Additional special case targets should be added here
+
+###############################################################################
+# Reactor Physics Application Makefile
+###############################################################################
+
+# Application name
+APP_NAME := mooseprojects
+
+# Include MOOSE build system
+include $(MOOSE_DIR)/framework/build.mk
+include $(MOOSE_DIR)/framework/moose.mk
+
+# Add source directories
+SOURCE_DIRS := $(shell find $(CURR_DIR)/src -type d)
+INCLUDE_DIRS := $(shell find $(CURR_DIR)/include -type d)
+
+# Add Fortran source files
+ADDITIONAL_SRCS := src/fortran/reactor_interfaces.f90
+
+# Set compiler flags
+FORTRAN_FLAGS += -cpp -fPIC
