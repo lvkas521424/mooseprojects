@@ -1,0 +1,4 @@
+app_name = mooseprojects
+allow_warnings = false
+allow_unused = false
+allow_override = false
