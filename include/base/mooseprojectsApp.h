@@ -1,15 +1,22 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/* mooseprojectsApp.h                                           */
+/* MOOSE Application Interface                                  */
+/*                                                              */
+/* Defines the main application class for reactor simulation    */
+/* with registration of all components.                         */
+/*                                                              */
+/* Created: Mar 19, 2025                                        */
+/* Last Modified: Mar 19, 2025                                  */
+/****************************************************************/
 
 #pragma once
 
 #include "MooseApp.h"
+#include "mooseprojectsApp.h"
+#include "Moose.h"
+#include "AppFactory.h"
+#include "ModulesApp.h"
+#include "MooseSyntax.h"
 
 class mooseprojectsApp : public MooseApp
 {
