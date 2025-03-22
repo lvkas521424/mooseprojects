@@ -20,9 +20,9 @@ ReactorTransfer::validParams()
 {
   InputParameters params = MultiAppCopyTransfer::validParams();
   
-  params.addClassDescription("支持自定义执行标志的反应堆数据传输");
+  params.addClassDescription("Reactor data transfer implementation with support for custom execution flags");
   
-  params.addParam<std::string>("transfer_group", "", "传输组名称，用于在代码中分组执行传输");
+  params.addParam<std::string>("transfer_group", "", "Transfer group name, used to group execution in code");
   
   // 添加自定义执行标志
   ExecFlagEnum & exec_enum = params.set<ExecFlagEnum>("execute_on");
@@ -49,12 +49,12 @@ ReactorTransfer::initialSetup()
   
   // 输出注册信息
   if (!_transfer_group.empty())
-    mooseInfo("ReactorTransfer: 已注册传输组 '", _transfer_group, "'");
+    mooseInfo("ReactorTransfer: Registered transfer group '", _transfer_group, "'");
 }
 
 void
 ReactorTransfer::execute()
 {
-  // 调用父类的execute方法执行实际的数据传输
+  std::cout << "ReactorTransfer::execute()" << std::endl;
   MultiAppCopyTransfer::execute();
 } 

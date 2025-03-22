@@ -17,10 +17,9 @@
 #include "MultiAppTransfer.h"
 #include "PostprocessorInterface.h"
 
-extern "C" {
-  void update_burnup_step(int step, int max_steps);
-  void update_burnup_detailed(int step, int max_steps, double burnup_value, double power, double time_step);
-}
+   extern "C" {
+     void update_burnup_step(int step, int max_steps);
+   }
 
 class ReactorCouplingControl : public Control
 {

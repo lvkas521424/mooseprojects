@@ -21,11 +21,11 @@ InputParameters
 ThermalMultiApp::validParams()
 {
   InputParameters params = FullSolveMultiApp::validParams();
-  params.addClassDescription("使用thermal_execute作为求解核心的热工多应用程序");
+  params.addClassDescription("Thermal multiapp using thermal_execute as the solver core");
   
-  params.addRequiredParam<std::vector<int>>("mesh_dims", "网格维度 (3个整数，表示x、y、z方向上的节点数)");
-  params.addParam<std::string>("power_var_name", "power", "功率场变量名");
-  params.addParam<std::string>("temperature_var_name", "temperature", "温度场变量名");
+  params.addRequiredParam<std::vector<int>>("mesh_dims", "Mesh dimensions (3 integers, representing the number of nodes in the x, y, z directions)");
+  params.addParam<std::string>("power_var_name", "power", "Power field variable name");
+  params.addParam<std::string>("temperature_var_name", "temperature", "Temperature field variable name");
 
   ExecFlagEnum & exec = params.set<ExecFlagEnum>("execute_on");
   exec.addAvailableFlags(LevelSet::EXEC_THERMAL);
@@ -46,7 +46,7 @@ ThermalMultiApp::ThermalMultiApp(const InputParameters & parameters)
 {
   // 验证网格维度是否有3个元素
   if (_mesh_dims.size() != 3)
-    mooseError("ThermalMultiApp: mesh_dims 必须包含3个整数值");
+    mooseError("ThermalMultiApp: mesh_dims must contain 3 integer values");
 }
 
 void
@@ -72,7 +72,7 @@ ThermalMultiApp::executeThermalSolver()
   
   // 验证温度场和功率场大小一致
   if (temp_solution.size() != field_size)
-    mooseError("ThermalMultiApp: 功率场和温度场大小不匹配");
+    mooseError("ThermalMultiApp: Power and temperature field sizes do not match");
   
   // 创建数据数组
   std::vector<double> power_data(field_size);
@@ -93,7 +93,7 @@ ThermalMultiApp::executeThermalSolver()
     temp_solution.set(i, temperature_data[i]);
   
   // 更新温度场系统
-  temp_sys.update();
+  //temp_sys.update();
 }
 
 bool

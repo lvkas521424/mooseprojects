@@ -22,11 +22,11 @@ InputParameters
 NeutronicsMultiApp::validParams()
 {
   InputParameters params = FullSolveMultiApp::validParams();
-  params.addClassDescription("使用b1_execute作为求解核心的中子学多应用程序");
+  params.addClassDescription("Neutronics multiapp using b1_execute as the solver core");
   
-  params.addRequiredParam<std::vector<int>>("mesh_dims", "网格维度 (3个整数，表示x、y、z方向上的节点数)");
-  params.addParam<std::string>("power_var_name", "power", "功率场变量名");
-  params.addParam<std::string>("temperature_var_name", "temperature", "温度场变量名");
+  params.addRequiredParam<std::vector<int>>("mesh_dims", "Mesh dimensions (3 integers, representing the number of nodes in the x, y, z directions)");
+  params.addParam<std::string>("power_var_name", "power", "Power field variable name");
+  params.addParam<std::string>("temperature_var_name", "temperature", "Temperature field variable name");
 
   ExecFlagEnum & exec = params.set<ExecFlagEnum>("execute_on");
   exec.addAvailableFlags(LevelSet::EXEC_NEUTRONIC);
@@ -51,7 +51,7 @@ NeutronicsMultiApp::NeutronicsMultiApp(const InputParameters & parameters)
 {
   // 验证网格维度是否有3个元素
   if (_mesh_dims.size() != 3)
-    mooseError("NeutronicsMultiApp: mesh_dims 必须包含3个整数值");
+    mooseError("NeutronicsMultiApp: mesh_dims MUST contain 3 integer values");
 }
 
 void
@@ -61,53 +61,68 @@ NeutronicsMultiApp::executeB1Solver()
     return;
 
   auto & app = appProblemBase(0);
-  // 修复错误1: 使用正确的方法获取变量
+  
+  // check if the variable is in the nonlinear system
+  // 检查变量是否存在
+  if (!app.hasVariable(_power_var_name) && !app.hasVariable(_temperature_var_name))
+    return;
+
+  // get the variable from the nonlinear system
+  // 获取功率变量
   auto & power_var = app.getVariable(0, _power_var_name);
   auto & power_sys = power_var.sys();
   auto & power_solution = power_sys.solution();
-  
-  // 修复错误2: 同样修正温度变量获取方法
+
+  // get the variable from the auxiliary system
+  // 获取温度变量
   auto & temp_var = app.getVariable(0, _temperature_var_name);
   auto & temp_sys = temp_var.sys();
   auto & temp_solution = temp_sys.solution();
   
-  // 获取数据场大小
+  // get the field size
+  // 获取数据场大小并验证
   unsigned int field_size = power_solution.size();
+  if (temp_solution.size() != field_size || field_size == 0)
+    return;
   
-  // 验证温度场和功率场大小一致
-  if (temp_solution.size() != field_size)
-    mooseError("NeutronicsMultiApp: 功率场和温度场大小不匹配");
-  
+  // establish the data arrays
   // 创建数据数组
-  std::vector<double> power_data(field_size);
-  std::vector<double> temperature_data(field_size);
+  std::vector<double> power_data(field_size, 0.0);
+  std::vector<double> temperature_data(field_size, 0.0);
+  //std::vector<double> power_density(field_size, 1.0);
+
   
-  // 从MOOSE复制功率场数据
+  // copy the power field data
+  // 从MOOSE复制温度场数据
   for (unsigned int i = 0; i < field_size; ++i)
-    power_data[i] = power_solution(i);
+    temperature_data[i] = temp_solution(i);
   
-  // 修复错误3: 处理const问题，使用临时非const数组
-  std::vector<int> mesh_dims_copy = _mesh_dims; 
+  // copy the mesh dimensions
+  // 创建网格维度的可修改副本
+  std::vector<int> mesh_dims_copy = _mesh_dims;
   
-  // 调用 Fortran 的 b1_execute 子程序
+  // 调用Fortran的b1_execute子程序
   b1_execute(mesh_dims_copy.data(), power_data.data(), temperature_data.data(), field_size);
   
-  // 将计算结果写回MOOSE的温度场
   for (unsigned int i = 0; i < field_size; ++i)
-    temp_solution.set(i, temperature_data[i]);
+    power_solution.set(i, power_data[i]);
   
-  // 更新温度场系统
-  temp_sys.update();
+  
+  //power_sys.update();
 
+  //for (unsigned int i = 0; i < field_size; ++i)
+  //{
+  //  power_density[i] = power_solution(i);
+  //  std::cout << "#" << "power_density[" << i << "] = " << power_density[i] << std::endl;
+  //}
+ // 
+  //return;
 }
 
 bool
 NeutronicsMultiApp::solveStep(Real dt, Real target_time, bool auto_advance)
 {
-  // 直接使用 b1_execute 作为求解核心
-  std::cout << "NeutronicsMultiApp::solveStep" << std::endl;
+  // 直接使用b1_execute作为求解核心
   executeB1Solver();
-  std::cout << "NeutronicsMultiApp::solveStep end" << std::endl;
   return true; // 始终返回成功
-
 } 

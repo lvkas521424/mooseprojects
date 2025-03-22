@@ -33,6 +33,8 @@ protected:
   
   // 网格维度 (必须是3个整数)
   std::vector<int> _mesh_dims;
+
+
   
   // 功率场变量名
   const std::string _power_var_name;

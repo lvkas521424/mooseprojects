@@ -1,37 +1,39 @@
 # 极简版 SCAPN 输入文件 - 用于外部 b1_execute 中子计算
 
 [Mesh]
-  [generated]
-    type = GeneratedMeshGenerator
+  [gmg]
+    type = GeneratedMeshGenerator  
     dim = 3
-    nx = 10
-    ny = 10
-    nz = 10
+    nx = 4
+    ny = 4
+    nz = 4
   []
 []
 
+
 [AuxVariables]
-  [power_density]
-    family = MONOMIAL
-    order = CONSTANT
-    initial_condition = 0.0
-  []
-  
   [temperature]
-    family = MONOMIAL
-    order = CONSTANT
-    initial_condition = 300.0
+    #family = MONOMIAL
+    #order = CONSTANT
+    #initial_condition = 300.0
+  []
+[]
+[Variables]
+  [power_density]  
+    #family = MONOMIAL
+    #order = CONSTANT
+    #initial_condition = 0.0
   []
 []
 
 [Problem]
   type = FEProblem
-  solve = false  # 禁用 MOOSE 内置求解器，所有计算由外部处理
+  solve = false  
 []
 
 [Executioner]
   type = Transient
-  num_steps = 1  # 可以减少到1步，因为实际计算在外部完成
+  num_steps = 1  
   dt = 1.0
 []
 
