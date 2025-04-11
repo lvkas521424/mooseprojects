@@ -20,41 +20,30 @@ ReactorTransfer::validParams()
 {
   InputParameters params = MultiAppCopyTransfer::validParams();
   
-  params.addClassDescription("Reactor data transfer implementation with support for custom execution flags");
+  // 获取执行标志枚举
+  ExecFlagEnum & exec = params.set<ExecFlagEnum>("execute_on");
   
-  params.addParam<std::string>("transfer_group", "", "Transfer group name, used to group execution in code");
+  // 保留原有标志，添加新标志
+  exec.addAvailableFlags(LevelSet::EXEC_FROM_NEUTRONIC);
+  exec.addAvailableFlags(LevelSet::EXEC_FROM_THERMAL);
   
-  // 添加自定义执行标志
-  ExecFlagEnum & exec_enum = params.set<ExecFlagEnum>("execute_on");
-  exec_enum.addAvailableFlags(LevelSet::EXEC_FROM_NEUTRONIC);
-  exec_enum.addAvailableFlags(LevelSet::EXEC_FROM_THERMAL);
-  exec_enum.addAvailableFlags(LevelSet::EXEC_TO_NEUTRONIC);
-  exec_enum.addAvailableFlags(LevelSet::EXEC_TO_THERMAL);
+  // 设置默认执行点（包含标准执行点和新添加的执行点）
+  // exec = {LevelSet::EXEC_INITIAL, LevelSet::EXEC_TIMESTEP_BEGIN, LevelSet::EXEC_FROM_NEUTRONIC, LevelSet::EXEC_FROM_THERMAL};
+  
+  params.addClassDescription("反应堆耦合数据传输");
   
   return params;
 }
 
-ReactorTransfer::ReactorTransfer(const InputParameters & parameters)
-  : MultiAppCopyTransfer(parameters),
-    _transfer_group(getParam<std::string>("transfer_group"))
+ReactorTransfer::ReactorTransfer(const InputParameters & parameters) :
+  MultiAppCopyTransfer(parameters)
 {
-}
-
-void
-ReactorTransfer::initialSetup()
-{
-  MultiAppCopyTransfer::initialSetup();
-  
-  // 可以在这里添加额外的初始化逻辑
-  
-  // 输出注册信息
-  if (!_transfer_group.empty())
-    mooseInfo("ReactorTransfer: Registered transfer group '", _transfer_group, "'");
 }
 
 void
 ReactorTransfer::execute()
 {
-  std::cout << "ReactorTransfer::execute()" << std::endl;
+  _console << "ReactorTransfer开始执行..." << std::endl;
   MultiAppCopyTransfer::execute();
-} 
+  _console << "ReactorTransfer执行完成" << std::endl;
+}

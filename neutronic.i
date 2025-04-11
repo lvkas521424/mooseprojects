@@ -16,7 +16,7 @@
     calc_type = COUPLED
     
     burn_step = 1            
-    max_burn_steps = 5      
+    max_burn_steps = 2     
     
     neutronics_app = neutronics 
     thermal_app = thermal
@@ -33,7 +33,7 @@
     mesh_dims = '4 4 4'          
     power_var_name = power_density  
     temperature_var_name = temperature  
-    execute_on = 'NEUTRONIC PRENEUTRONIC CORNEUTRONIC '     
+    execute_on = 'NEUTRONIC PRENEUTRONIC CORNEUTRONIC MULTIAPP_FIXED_POINT_BEGIN'     
   []
   
   [thermal]
@@ -43,19 +43,28 @@
     mesh_dims = '4 4 4'           
     power_var_name = power_density  
     temperature_var_name = temperature  
-    execute_on = 'THERMAL'            
+    execute_on = 'THERMAL MULTIAPP_FIXED_POINT_BEGIN'            
   []
 []
 
 [Transfers]
   [from_neutronics]
-    type = MultiAppCopyTransfer
+    type = ReactorTransfer
     from_multi_app = neutronics
     source_variable = power_density
     variable = power_density
-    #execute_on = 'FROM_NEUTRONIC TIMESTEP_END'       
+    #execute_on = 'FROM_NEUTRONIC'       
   []
 []
+# [Transfers]
+#   [from_neutronics1]
+#     type = MultiAppCopyTransfer
+#     from_multi_app = neutronics
+#     source_variable = power_density
+#     variable = power_density
+#     #execute_on = 'FROM_NEUTRONIC'       
+#   []
+# []
 
 [Transfers]
   [from_thermal]
@@ -124,7 +133,7 @@
   type = Transient
   
   start_time = 0
-  end_time = 5           
+  end_time = 2           
   dt = 1.0               
   
   # num_steps = 10          
@@ -166,31 +175,31 @@
     execute_on = 'TIMESTEP_END TRANSFER'
   []
   
-  [total_temperature]
-    type = ElementIntegralVariablePostprocessor
-    variable = temperature
-    execute_on = 'TIMESTEP_END TRANSFER' 
-  []
-  
-  [avg_temperature]
-    type = ElementAverageValue
-    variable = temperature
-    execute_on = 'TIMESTEP_END TRANSFER'
-  []
-  
-  [max_temperature]
-    type = ElementExtremeValue
-    variable = temperature
-    value_type = max
-    execute_on = 'TIMESTEP_END TRANSFER'
-  []
-  
-  [min_temperature]
-    type = ElementExtremeValue
-    variable = temperature
-    value_type = min
-    execute_on = 'TIMESTEP_END TRANSFER'
-  []
+  # [total_temperature]
+  #   type = ElementIntegralVariablePostprocessor
+  #   variable = temperature
+  #   execute_on = 'TIMESTEP_END TRANSFER' 
+  # []
+  # 
+  # [avg_temperature]
+  #   type = ElementAverageValue
+  #   variable = temperature
+  #   execute_on = 'TIMESTEP_END TRANSFER'
+  # []
+  # 
+  # [max_temperature]
+  #   type = ElementExtremeValue
+  #   variable = temperature
+  #   value_type = max
+  #   execute_on = 'TIMESTEP_END TRANSFER'
+  # []
+  # 
+  # [min_temperature]
+  #   type = ElementExtremeValue
+  #   variable = temperature
+  #   value_type = min
+  #   execute_on = 'TIMESTEP_END TRANSFER'
+  # []
 []
 
 [Outputs]

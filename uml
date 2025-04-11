@@ -1,0 +1,70 @@
+
+    class ReactorApp {
+        +registerAll()
+        +registerObjects()
+        +associateSyntax()
+    }
+
+    class ReactorCouplingControl {
+        -_max_iterations: unsigned int
+        -_convergence_tol: Real
+        +execute()
+        +
+        -checkConvergence(): bool
+    }
+
+    class NeutronicsMultiApp {
+        -_mesh_dims: vector<int>
+        -_power_var_name: string
+        -_temperature_var_name: string
+        +solveStep()
+        -executeB1Solver()
+    }
+
+    class ThermalMultiApp {
+        -_mesh_dims: vector<int>
+        -_power_var_name: string
+        -_temperature_var_name: string
+        +solveStep()
+    }
+
+    class ReactorTransfer {
+        -_transfer_count: unsigned int
+        -from_neutronics
+        -to_neutronics
+        -from_thermal
+        -to_thermal
+        +execute()
+    }
+
+    class SCAPN_Interfaces1 {
+        <<Fortran>>
+        +SCAP_N_Calculation()
+    }
+    
+    class SCAPN_Interfaces2 {
+        <<Fortran>>
+        +SCAP_N_Preprocessor()
+        +SCAP_N_Postprocessor()
+    }
+    class Thermal_Interfaces {
+        <<Fortran>>
+        +Thermal_calculation()
+    }
+
+
+    ReactorApp <.. ReactorCouplingControl : registers
+    ReactorApp <.. NeutronicsMultiApp     : registers
+    ReactorApp <.. ThermalMultiApp        : registers
+    ReactorApp <.. ReactorTransfer        : registers
+
+    ReactorCouplingControl --> NeutronicsMultiApp : controls execution
+    ReactorCouplingControl --> ThermalMultiApp    : controls execution
+    ReactorCouplingControl --> ReactorTransfer    : controls execution
+    ReactorCouplingControl --> SCAPN_Interfaces2  : calls
+
+    NeutronicsMultiApp --> SCAPN_Interfaces1  : calls
+    ThermalMultiApp    --> Thermal_Interfaces : calls
+    
+    ReactorTransfer --> NeutronicsMultiApp : transfers data
+    ReactorTransfer --> ThermalMultiApp    : transfers data

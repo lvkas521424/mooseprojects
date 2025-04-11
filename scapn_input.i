@@ -1,4 +1,3 @@
-# 极简版 SCAPN 输入文件 - 用于外部 b1_execute 中子计算
 
 [Mesh]
   [gmg]

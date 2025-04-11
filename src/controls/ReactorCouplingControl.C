@@ -218,38 +218,40 @@ ReactorCouplingControl::executefirstNeutronics()
   _fe_problem.execMultiApps(LevelSet::EXEC_NEUTRONIC);
   // 如果有定义传输组名称，使用传输组
 
-  if (_fe_problem.hasVariable("power_density"))
-  {
-    // 使用 MooseVariableFieldBase 类型
-    MooseVariableFieldBase & power_var = _fe_problem.getVariable(0, "power_density");
-    
-    auto & sys = power_var.sys();
-    
-    auto & solution = sys.solution();
-    
-    std::cout << "主应用功率密度字段大小: " << solution.size() << std::endl;
-    std::cout << "solution = " << solution << std::endl;
-    // 检查是否有模式
-  }
+
+
+  // if (_fe_problem.hasVariable("power_density"))
+  // {
+  //   // 使用 MooseVariableFieldBase 类型
+  //   MooseVariableFieldBase & power_var = _fe_problem.getVariable(0, "power_density");
+  //   
+  //   auto & sys = power_var.sys();
+  //   
+  //   auto & solution = sys.solution();
+  //   
+  //   std::cout << "主应用功率密度字段大小: " << solution.size() << std::endl;
+  //   std::cout << "solution = " << solution << std::endl;
+  //   // 检查是否有模式
+  // }
 
   // 执行从中子学应用到主应用的数据传输 
   std::cout << "ReactorCouplingControl: 传输功率密度场到主应用..." << std::endl;
-  //_fe_problem.execTransfers(LevelSet::EXEC_FROM_NEUTRONIC);
+  // _fe_problem.execTransfers(LevelSet::EXEC_FROM_NEUTRONIC);
 
-   // 验证传输成功
-  if (_fe_problem.hasVariable("power_density"))
-  {
-    // 使用 MooseVariableFieldBase 类型
-    MooseVariableFieldBase & power_var = _fe_problem.getVariable(0, "power_density");
-    
-    auto & sys = power_var.sys();
-    
-    auto & solution = sys.solution();
-    
-    std::cout << "主应用功率密度字段大小: " << solution.size() << std::endl;
-    std::cout << "solution = " << solution << std::endl;
-    // 检查是否有模式
-}
+ //  // 验证传输成功
+ // if (_fe_problem.hasVariable("power_density"))
+ // {
+ //   // 使用 MooseVariableFieldBase 类型
+ //   MooseVariableFieldBase & power_var = _fe_problem.getVariable(0, "power_density");
+ //   
+ //   auto & sys = power_var.sys();
+ //   
+ //   auto & solution = sys.solution();
+ //   
+ //   std::cout << "主应用功率密度字段大小: " << solution.size() << std::endl;
+ //   std::cout << "solution = " << solution << std::endl;
+ //   // 检查是否有模式
+ //   }
 
   // 触发后处理器计算和输出
   _fe_problem.execute(EXEC_TIMESTEP_END);
@@ -292,55 +294,64 @@ ReactorCouplingControl::executefirstCoupled()
 {
   try // 添加异常捕获
   {
-    // 检查多应用程序是否存在
-    bool has_neutronics = _fe_problem.hasMultiApp(_neutronics_app_name);
-    bool has_thermal = _fe_problem.hasMultiApp(_thermal_app_name);
-    
-    if (!has_neutronics && !has_thermal)
-    {
-      mooseWarning("ReactorCouplingControl: Can't find necessary multiapps");
-      return false;
-    }
-    
+
+    _fe_problem.execMultiApps(EXEC_MULTIAPP_FIXED_POINT_BEGIN);
+
+    std::cout << "ReactorCouplingControl: EXECUTE Fixed Point Iteration..." << std::endl;
+
+    _fe_problem.execMultiApps(EXEC_MULTIAPP_FIXED_POINT_END);
+
+    // // 检查多应用程序是否存在
+    // bool has_neutronics = _fe_problem.hasMultiApp(_neutronics_app_name);
+    // bool has_thermal = _fe_problem.hasMultiApp(_thermal_app_name);
     // 
-    // 提前声明这些变量
-    std::vector<std::string> neutronics_apps;
-    std::vector<std::string> thermal_apps;
-    
-    // 填充应用程序列表
-    neutronics_apps.push_back(_neutronics_app_name);
-    thermal_apps.push_back(_thermal_app_name);
-    
-    // 耦合迭代
-    Real temp_convergence = 1.0;
-    unsigned int iter = 0;
-    
-    std::cout << "START COUPLING ITERATION, MAX ITERATIONS: " << _max_coupling_iterations << std::endl;
-    
-    while (iter < _max_coupling_iterations)
-    {
-      // 记录迭代次数
-      iter++;
+    // if (!has_neutronics && !has_thermal)
+    // {
+    //   mooseWarning("ReactorCouplingControl: Can't find necessary multiapps");
+    //   return false;
+    // }
+    // 
+    // // 
+    // // 提前声明这些变量
+    // std::vector<std::string> neutronics_apps;
+    // std::vector<std::string> thermal_apps;
+    // 
+    // // 填充应用程序列表
+    // neutronics_apps.push_back(_neutronics_app_name);
+    // thermal_apps.push_back(_thermal_app_name);
+    // 
+    // // 耦合迭代
+    // Real temp_convergence = 1.0;
+    // unsigned int iter = 0;
+    // 
+    // std::cout << "START COUPLING ITERATION, MAX ITERATIONS: " << _max_coupling_iterations << std::endl;
+    // 
+    // while (iter < _max_coupling_iterations)
+    // {
+    //   // 记录迭代次数
+    //   iter++;
 
-      std::cout << "ReactorCouplingControl: 耦合迭代次数=" << iter << std::endl;
-      
-      std::cout << "EXECUTE NEUTRONICS..." << std::endl;
+//     //   std::cout << "ReactorCouplingControl: 耦合迭代次数=" << iter << std::endl;
+    //   
+    //   std::cout << "EXECUTE NEUTRONICS..." << std::endl;
 
-      bool neutronics_success = _fe_problem.execMultiApps(LevelSet::EXEC_NEUTRONIC, 
-                          neutronics_apps.empty() ? nullptr : &neutronics_apps);
+//     //   bool neutronics_success = _fe_problem.execMultiApps(LevelSet::EXEC_NEUTRONIC, 
+    //                       neutronics_apps.empty() ? nullptr : &neutronics_apps);
 
-      if (!neutronics_success) {
-        std::cout << "NEUTRONICS EXECUTION FAILED!" << std::endl;
-        return false;
-      }
-      
-      std::cout << "EXECUTE THERMAL..." << std::endl;
-      bool thermal_success = _fe_problem.execMultiApps(LevelSet::EXEC_THERMAL, 
-                          thermal_apps.empty() ? nullptr : &thermal_apps);
-      if (!thermal_success) {
-        std::cout << "THERMAL EXECUTION FAILED!" << std::endl;
-        return false;
-      }
+//     //                       
+
+//     //   if (!neutronics_success) {
+    //     std::cout << "NEUTRONICS EXECUTION FAILED!" << std::endl;
+    //     return false;
+    //   }
+    //   
+    //   std::cout << "EXECUTE THERMAL..." << std::endl;
+    //   bool thermal_success = _fe_problem.execMultiApps(LevelSet::EXEC_THERMAL, 
+    //                       thermal_apps.empty() ? nullptr : &thermal_apps);
+    //   if (!thermal_success) {
+    //     std::cout << "THERMAL EXECUTION FAILED!" << std::endl;
+    //     return false;
+    //   }
       
       // 收敛检查
       // if (_fe_problem.hasPostprocessor(_temp_conv_pp_name))
@@ -358,12 +369,12 @@ ReactorCouplingControl::executefirstCoupled()
       // {
       //   std::cout << "WARNING: 找不到收敛判断后处理器 '" << _temp_conv_pp_name << "'" << std::endl;
       // }
-    }
+    // }
     
     // 达到最大迭代次数
-    std::cout << "ReactorCouplingControl: MAX ITERATIONS REACHED ("<< _max_coupling_iterations <<
-                "), BUT CONVERGENCE NOT REACHED (current: " << temp_convergence <<
-                ", target: " <<  _coupling_tolerance <<  ")" << std::endl;
+    //  std::cout << "ReactorCouplingControl: MAX ITERATIONS REACHED ("<< _max_coupling_iterations <<
+    //             "), BUT CONVERGENCE NOT REACHED (current: " << temp_convergence <<
+    //             ", target: " <<  _coupling_tolerance <<  ")" << std::endl;
   }
   catch (const std::exception& e)
   {
