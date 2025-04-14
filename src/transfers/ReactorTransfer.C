@@ -43,7 +43,7 @@ ReactorTransfer::ReactorTransfer(const InputParameters & parameters) :
 void
 ReactorTransfer::execute()
 {
-  _console << "ReactorTransfer开始执行..." << std::endl;
+  std::cout << "ReactorTransfer开始执行..." << std::endl;
   MultiAppCopyTransfer::execute();
-  _console << "ReactorTransfer执行完成" << std::endl;
+  std::cout << "ReactorTransfer执行完成" << std::endl;
 }

@@ -216,7 +216,7 @@ ReactorCouplingControl::executefirstNeutronics()
   // 检查中子学多应用程序是否存在
   if (!_fe_problem.hasMultiApp(_neutronics_app_name))
   {
-    mooseWarning("ReactorCouplingControl: Can't find neutronics multiapp '", _neutronics_app_name, "'");
+    std::cout << "WARNING: ReactorCouplingControl: Can't find neutronics multiapp '" << _neutronics_app_name << "'" << std::endl;
     return;
   }
   
@@ -281,7 +281,7 @@ ReactorCouplingControl::executesubsquentNeutronics()
   // 检查中子学多应用程序是否存在
   if (!_fe_problem.hasMultiApp(_neutronics_app_name))
   {
-    mooseWarning("ReactorCouplingControl: Can't find neutronics multiapp '", _neutronics_app_name, "'");
+    std::cout << "WARNING: ReactorCouplingControl: Can't find neutronics multiapp '" << _neutronics_app_name << "'" << std::endl;
     return;
   }
   
@@ -312,7 +312,7 @@ ReactorCouplingControl::executefirstCoupled()
     Real time = _fe_problem.time();
     int time_step = _fe_problem.timeStep();
 
-    Moose::out << "\n====== Starting Fixed Point Iteration at t = " << time 
+    std::cout << "\n====== Starting Fixed Point Iteration at t = " << time 
              << ", step = " << time_step << " ======\n";
 
 
@@ -336,7 +336,7 @@ ReactorCouplingControl::executefirstCoupled()
 
     _fe_problem.execMultiApps(LevelSet::EXEC_THERMAL);
 
-    Moose::out << "====== Fixed Point Iteration Completed ======\n\n";
+    std::cout << "====== Fixed Point Iteration Completed ======\n\n";
     
   }
   catch (const std::exception& e)
@@ -364,7 +364,7 @@ ReactorCouplingControl::executesubsquentCoupled()
   
   if (!has_neutronics || !has_thermal)
   {
-    mooseWarning("ReactorCouplingControl: Can't find necessary multiapps");
+    std::cout << "WARNING: ReactorCouplingControl: Can't find necessary multiapps" << std::endl;
     return false;
   }
   

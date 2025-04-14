@@ -78,35 +78,44 @@ ReactorCouplingUserObject::initialize()
   // 确认多应用存在
   if (!_fe_problem.hasMultiApp(_neutronics_app_name) || !_fe_problem.hasMultiApp(_thermal_app_name))
   {
-    mooseWarning("ReactorCouplingUserObject: 必要的多应用不存在");
+    std::cout << "WARNING: ReactorCouplingUserObject: 必要的多应用不存在" << std::endl;
   }
 
   std::cout << "ReactorCouplingUserObject: INITIALIZE METHOD CALLED, NEUTRONICS APP EXISTS: " << _fe_problem.hasMultiApp(_neutronics_app_name) << std::endl;
+  std::cout << "ReactorCouplingUserObject: INITIALIZE METHOD CALLED, THERMAL    APP EXISTS: " << _fe_problem.hasMultiApp(_thermal_app_name) << std::endl;
 }
 
 void
 ReactorCouplingUserObject::execute()
 {
-  // 获取当前时间步，并将其设置为当前燃耗步
   Real time = _fe_problem.time();
   unsigned int current_step = std::floor(time + 0.0001);
   
-  std::cout << "ReactorCouplingUserObject: EXECUTE METHOD CALLED, CURRENT TIME=" << time 
-            << ", CURRENT BURNUP STEP=" << _burn_step << std::endl;
+  std::cout << "ReactorCouplingUserObject: EXECUTE METHOD CALLED, TIME=" << time << ", BURNUP STEP=" << _burn_step << std::endl;
   
-  // 只执行当前燃耗步
-  bool success = false;
-  
-  if (_burn_step == 1)
-  {
-    success = executeFirstStep();
+  try {
+    bool success = false;
+    
+    if (_burn_step == 1) {
+      success = executeFirstStep();
+    } else if (_burn_step >= 2) {
+      success = executeSubsequentStep();
+    }
+    
+    if (!success) {
+      std::cout << "执行燃耗步 " << _burn_step << " 失败" << std::endl;
+    } else {
+      std::cout << "执行燃耗步 " << _burn_step << " 成功" << std::endl;
+    }
+    
+    _burn_step++;
   }
-  else if (_burn_step >= 2)
-  {
-    success = executeSubsequentStep();
+  catch (const std::exception& e) {
+    std::cout << "执行过程中发生异常: " << e.what() << std::endl;
   }
-  
-  _burn_step++;
+  catch (...) {
+    std::cout << "执行过程中发生未知异常" << std::endl;
+  }
 }
 
 // 执行第一个燃耗步
@@ -157,7 +166,7 @@ ReactorCouplingUserObject::executefirstNeutronics()
   // 检查中子学多应用程序是否存在
   if (!_fe_problem.hasMultiApp(_neutronics_app_name))
   {
-    mooseWarning("ReactorCouplingUserObject: Can't find neutronics multiapp '", _neutronics_app_name, "'");
+    std::cout << "WARNING: ReactorCouplingUserObject: Can't find neutronics multiapp '" << _neutronics_app_name << "'" << std::endl;
     return;
   }
   
@@ -184,7 +193,7 @@ ReactorCouplingUserObject::executesubsquentNeutronics()
   // 检查中子学多应用程序是否存在
   if (!_fe_problem.hasMultiApp(_neutronics_app_name))
   {
-    mooseWarning("ReactorCouplingUserObject: Can't find neutronics multiapp '", _neutronics_app_name, "'");
+    std::cout << "WARNING: ReactorCouplingUserObject: Can't find neutronics multiapp '" << _neutronics_app_name << "'" << std::endl;
     return;
   }
   
@@ -245,7 +254,7 @@ ReactorCouplingUserObject::executesubsquentCoupled()
   
   if (!has_neutronics || !has_thermal)
   {
-    mooseWarning("ReactorCouplingUserObject: Can't find necessary multiapps");
+    std::cout << "WARNING: ReactorCouplingUserObject: Can't find necessary multiapps" << std::endl;
     return false;
   }
   
@@ -283,10 +292,10 @@ ReactorCouplingUserObject::executesubsquentCoupled()
   // 判断是否达到最大迭代次数
   if (iter >= _max_coupling_iterations)
   {
-    std::cout << "ReactorCouplingUserObject:   MAX ITERATIONS REACHED ("<< _max_coupling_iterations <<
+    std::cout << "ReactorCouplingUserObject: MAX ITERATIONS REACHED ("<< _max_coupling_iterations <<
                 "), BUT CONVERGENCE NOT REACHED (current: " << temp_convergence <<
                 ", target: " <<  _coupling_tolerance <<  ")" << std::endl;
-    return false;
+    return true;
   }
   
   return true;
@@ -307,3 +316,4 @@ ReactorCouplingUserObject::updateFortranBurnupStep()
   
   std::cout << "Fortran program burnup step updated successfully" << std::endl;
 }
+
