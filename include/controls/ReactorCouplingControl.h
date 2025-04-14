@@ -160,4 +160,14 @@ protected:
   /// 时间步长 (天)
   /// Time step (days)
   Real _time_step;
+
+    // 固定点迭代参数
+  const unsigned int _fixed_point_max_its;
+  const unsigned int _fixed_point_min_its;
+  const Real _fixed_point_tol;
+  const bool _accept_on_max_iteration;
+  
+  // 添加收敛检查方法
+  bool checkConvergence();
+
 }; 

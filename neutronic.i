@@ -9,9 +9,9 @@
   []
 []
 
-[Controls]
+[UserObjects]
   [coupling_control]
-    type = ReactorCouplingControl
+    type = ReactorCouplingUserObject
     
     calc_type = COUPLED
     
@@ -20,8 +20,13 @@
     
     neutronics_app = neutronics 
     thermal_app = thermal
-    #from_neutronics_transfers = from_neutronics
-    execute_on = 'TIMESTEP_BEGIN'   # 在每个时间步开始时执行Control
+    
+    fixed_point_max_its = 5
+    fixed_point_min_its = 3
+    fixed_point_tol = 1e-6
+    accept_on_max_iteration = true
+    
+    execute_on = 'TIMESTEP_BEGIN'
   []
 []
 
@@ -33,7 +38,8 @@
     mesh_dims = '4 4 4'          
     power_var_name = power_density  
     temperature_var_name = temperature  
-    execute_on = 'NEUTRONIC PRENEUTRONIC CORNEUTRONIC MULTIAPP_FIXED_POINT_BEGIN'     
+    execute_on = 'NEUTRONIC PRENEUTRONIC CORNEUTRONIC'
+    # execute_on = 'MULTIAPP_FIXED_POINT_BEGIN' 
   []
   
   [thermal]
@@ -43,7 +49,8 @@
     mesh_dims = '4 4 4'           
     power_var_name = power_density  
     temperature_var_name = temperature  
-    execute_on = 'THERMAL MULTIAPP_FIXED_POINT_BEGIN'            
+    execute_on = 'THERMAL'            
+    # execute_on = 'MULTIAPP_FIXED_POINT_BEGIN'
   []
 []
 
@@ -133,7 +140,7 @@
   type = Transient
   
   start_time = 0
-  end_time = 2           
+  end_time   = 2        
   dt = 1.0               
   
   # num_steps = 10          
@@ -145,6 +152,11 @@
   # l_tol = 1e-6
   # l_max_its = 100
   # nl_max_its = 50
+
+  # fixed_point_max_its = 5
+  # fixed_point_min_its = 3
+  # fixed_point_abs_tol = 1e-6
+  # accept_on_max_fixed_point_iteration = true
 []
 
 [Postprocessors]
