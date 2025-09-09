@@ -1,0 +1,77 @@
+{
+  // 使用 IntelliSense 了解相关属性。 
+  // 悬停以查看现有属性的描述。
+  // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+    "configurations": [
+      {
+          "type": "cppdbg",
+          "request": "launch",
+          "name": "调试 MOOSE 应用",
+          "program": "${workspaceFolder}/mooseprojects-opt",
+          "args": ["-i", "neutronic.i"],
+          "cwd": "${workspaceFolder}",
+          "miDebuggerPath": "/usr/bin/gdb",
+          "MIMode": "gdb",
+          "stopAtEntry": false,
+          "setupCommands": [
+              {
+                  "description": "为 gdb 启用整齐打印",
+                  "text": "-enable-pretty-printing",
+                  "ignoreFailures": true
+              },
+              {
+                  "description": "设置断点模式",
+                  "text": "set breakpoint pending on",
+                  "ignoreFailures": true
+              }
+          ]
+      },
+      {
+          "type": "cppdbg",
+          "request": "launch",
+          "name": "调试 MOOSE 应用 (调试版)",
+          "program": "${workspaceFolder}/mooseprojects-dbg",
+          "args": ["-i", "neutronic.i"],
+          "cwd": "${workspaceFolder}",
+          "miDebuggerPath": "/usr/bin/gdb",
+          "MIMode": "gdb",
+          "stopAtEntry": false,
+          "setupCommands": [
+              {
+                  "description": "为 gdb 启用整齐打印",
+                  "text": "-enable-pretty-printing",
+                  "ignoreFailures": true
+              },
+              {
+                  "description": "设置断点模式",
+                  "text": "set breakpoint pending on",
+                  "ignoreFailures": true
+              }
+          ]
+      },
+      {
+          "type": "cppdbg",
+          "request": "launch",
+          "name": "调试热力学输入 (调试版)",
+          "program": "${workspaceFolder}/mooseprojects-dbg",
+          "args": ["-i", "thermal_input.i"],
+          "cwd": "${workspaceFolder}",
+          "miDebuggerPath": "/usr/bin/gdb",
+          "MIMode": "gdb",
+          "stopAtEntry": false,
+          "setupCommands": [
+              {
+                  "description": "为 gdb 启用整齐打印",
+                  "text": "-enable-pretty-printing",
+                  "ignoreFailures": true
+              },
+              {
+                  "description": "设置断点模式",
+                  "text": "set breakpoint pending on",
+                  "ignoreFailures": true
+              }
+          ]
+      }
+  ]
+}

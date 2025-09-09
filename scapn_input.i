@@ -2,17 +2,17 @@
   [gmg]
     type = GeneratedMeshGenerator  
     dim = 3
-    nx = 4
+    nx = 3
     ny = 4
-    nz = 4
+    nz = 5
   []
 []
 
 
 [AuxVariables]
   [temperature]
-    #family = MONOMIAL
-    #order  = CONSTANT
+    # family = MONOMIAL
+    # order  = CONSTANT
     # initial_condition = 300.0
   []
 []

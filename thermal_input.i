@@ -4,9 +4,9 @@
   [gmg]
     type = GeneratedMeshGenerator  
     dim = 3
-    nx = 4
+    nx = 3
     ny = 4
-    nz = 4
+    nz = 5
   []
 []
 
@@ -18,16 +18,16 @@
   []
 []
 [AuxVariables]
-  [power_density1]  # 添加这个
+  [power_density]  # 添加这个
     family = MONOMIAL
     order = CONSTANT
     #initial_condition = 0.0
   []
-  [power_density2]  # 添加这个
-    family = MONOMIAL
-    order = CONSTANT
-    #initial_condition = 0.0
-  []
+  # [power_density2]  # 添加这个
+  #   family = MONOMIAL
+  #   order = CONSTANT
+  #   #initial_condition = 0.0
+  # []
 []
 
 [Problem]

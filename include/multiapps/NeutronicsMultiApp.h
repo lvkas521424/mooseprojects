@@ -1,26 +1,39 @@
 /****************************************************************/
 /* NeutronicsMultiApp.h                                         */
 /* 简化版中子学多应用头文件                                         */
+/* 添加了MPI并行支持                                             */
 /****************************************************************/
 
 #pragma once
 
 #include "FullSolveMultiApp.h"
+// 添加MPI支持
+#include "libmesh/parallel.h"
+#include <mpi.h>
+#include <vector>
 
 // 声明Fortran接口
-extern "C" {
-  void b1_execute_3d(int* mesh_dims, double* power_data1, double* power_data2, double* temperature_data, int field_size);
+extern "C"
+{
+    void b1_execute_3d_mpi(
+        // MPI_Comm comm,
+        int *mesh_dims,
+        double *power_data1,
+        double *power_data2,
+        double *temperature_data,
+        int field_size);
 }
 
 /**
  * 中子学多应用类，简化版
  * 用于调用外部b1_execute计算程序
+ * 支持MPI并行计算
  */
 class NeutronicsMultiApp : public FullSolveMultiApp
 {
 public:
+    NeutronicsMultiApp(const InputParameters &parameters);
     static InputParameters validParams();
-    NeutronicsMultiApp(const InputParameters & parameters);
 
 protected:
     virtual bool solveStep(Real dt, Real target_time, bool auto_advance) override;
@@ -28,14 +41,20 @@ protected:
 
     // 网格维度参数
     const std::vector<int> _mesh_dims;
-    
+
     // 变量名称参数
-    const std::string _power_var_name1;  // 第一个功率变量名
-    const std::string _power_var_name2;  // 第二个功率变量名
+    const std::string _power_var_name1; // 第一个功率变量名
+    const std::string _power_var_name2; // 第二个功率变量名
     const std::string _temperature_var_name;
+
+    // 计算类型参数
+    const unsigned int _calc_type;
+
+    // UserObject引用（可选方法）
+    const std::string _coupling_userobject_name;
 
     // 数据存储
     std::vector<double> _power_data1;
     std::vector<double> _power_data2;
     std::vector<double> _temperature_data;
-}; 
+};

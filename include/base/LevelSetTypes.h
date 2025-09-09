@@ -15,13 +15,13 @@
 // 在头文件顶部添加外部函数声明
 namespace LevelSet
 {
-extern const ExecFlagType EXEC_NEUTRONIC;
-extern const ExecFlagType EXEC_PRENEUTRONIC;
-extern const ExecFlagType EXEC_CORNEUTRONIC;
+    extern const ExecFlagType EXEC_NEUTRONIC;
+    extern const ExecFlagType EXEC_PRENEUTRONIC;
+    extern const ExecFlagType EXEC_CORNEUTRONIC;
 
-extern const ExecFlagType EXEC_THERMAL;
-extern const ExecFlagType EXEC_FROM_NEUTRONIC;
-extern const ExecFlagType EXEC_FROM_THERMAL;
-extern const ExecFlagType EXEC_TO_NEUTRONIC;
-extern const ExecFlagType EXEC_TO_THERMAL;
+    extern const ExecFlagType EXEC_THERMAL;
+    extern const ExecFlagType EXEC_FROM_NEUTRONIC;
+    extern const ExecFlagType EXEC_FROM_THERMAL;
+    extern const ExecFlagType EXEC_TO_NEUTRONIC;
+    extern const ExecFlagType EXEC_TO_THERMAL;
 }

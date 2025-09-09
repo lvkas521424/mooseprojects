@@ -3,9 +3,15 @@
   [gmg]
     type = GeneratedMeshGenerator  
     dim = 3
-    nx = 4
+    nx = 3
     ny = 4
-    nz = 4
+    nz = 5
+    xmin = 0.0
+    xmax = 3.0
+    ymin = 0.0
+    ymax = 4.0
+    zmin = 0.0
+    zmax = 5.0
   []
 []
 
@@ -13,10 +19,10 @@
   [coupling_control]
     type = ReactorCouplingUserObject
     
-    calc_type = NEUTRONICS
+    calc_type = COUPLED
     
     burn_step = 1            
-    max_burn_steps = 10    
+    max_burn_steps = 3   
     
     neutronics_app = neutronics 
     thermal_app = thermal
@@ -30,24 +36,31 @@
     type = NeutronicsMultiApp
     app_type = MooseprojectsApp
     input_files = 'scapn_input.i'
-    mesh_dims = '4 4 4'          
+    mesh_dims = '3 4 5'          
     power_var_name1 = power_density
     power_var_name2 = tempe_density 
     temperature_var_name = temperature  
     execute_on = 'NEUTRONIC PRENEUTRONIC CORNEUTRONIC'
+    
+    # MPI进程分配设置
+    # max_procs_per_app = 20          # 分配给每个子应用的最大进程数
+    min_procs_per_app = 4           # 分配给每个子应用的最小进程数
+    
     # execute_on = 'MULTIAPP_FIXED_POINT_BEGIN' 
   []
   
-  #[thermal]
-  #  type = ThermalMultiApp
-  #  app_type = MooseprojectsApp
-  #  input_files = 'thermal_input.i'
-  #  mesh_dims = '4 4 4'           
-  #  power_var_name = power_density  
-  #  temperature_var_name = temperature  
-  #  execute_on = 'THERMAL'            
-  #  # execute_on = 'MULTIAPP_FIXED_POINT_BEGIN'
-  #[]
+  [thermal]
+    type = ThermalMultiApp
+    app_type = MooseprojectsApp
+    input_files = 'thermal_input.i'
+    mesh_dims = '3 4 5'           
+    power_var_name = power_density  
+    temperature_var_name = temperature  
+    execute_on = 'THERMAL'            
+    # execute_on = 'MULTIAPP_FIXED_POINT_BEGIN'
+    max_procs_per_app = 2          # 分配给每个子应用的最大进程数
+    # min_procs_per_app = 1           # 分配给每个子应用的最小进程数
+  []
 []
 
 # [Transfers]
@@ -125,19 +138,25 @@
   [power_density]
     family = MONOMIAL
     order = CONSTANT
+    # family = LAGRANGE
+    # order = FIRST
     # initial_condition = 0.0
   []
   [tempe_density]
     family = MONOMIAL
     order = CONSTANT
+    # family = LAGRANGE
+    # order = FIRST
     # initial_condition = 0.0
   []
 []
 [AuxVariables]
   [temperature]
+    # family = MONOMIAL
+    # order = CONSTANT
     family = LAGRANGE
     order = FIRST
-    initial_condition = 200.0
+    # initial_condition = 200.0
   []
 []
 
@@ -151,8 +170,8 @@
   type = Transient
   
   start_time = 0
-  end_time   = 10        
-  dt = 1.0               
+  end_time   = 3        
+  dt = 1.00          
   
   # num_steps = 10          
   
@@ -175,53 +194,35 @@
   [total_power1]
     type = ElementIntegralVariablePostprocessor
     variable = power_density
-    execute_on = 'TIMESTEP_END' 
-  []
-  
-  [avg_power1]
-    type = ElementAverageValue
-    variable = power_density
-    execute_on = 'TIMESTEP_END'
   []
   
   [max_power1]
     type = ElementExtremeValue
     variable = power_density
     value_type = max
-    execute_on = 'TIMESTEP_END'
   []
   
   [min_power1]
     type = ElementExtremeValue
     variable = power_density
     value_type = min
-    execute_on = 'TIMESTEP_END'
   []
 
   [total_power2]
     type = ElementIntegralVariablePostprocessor
     variable = tempe_density
-    execute_on = 'TIMESTEP_END' 
-  []
-  
-  [avg_power2]
-    type = ElementAverageValue
-    variable = tempe_density
-    execute_on = 'TIMESTEP_END'
   []
   
   [max_power2]
     type = ElementExtremeValue
     variable = tempe_density
     value_type = max
-    execute_on = 'TIMESTEP_END'
   []
   
     [min_power2]
     type = ElementExtremeValue
     variable = tempe_density
     value_type = min
-    execute_on = 'TIMESTEP_END'
   []
   
 []
@@ -230,12 +231,12 @@
 [Outputs]
   exodus = true
   csv = true
-  [vtk]
-    type = VTK
-    interval = 1
-  []
-  [exodus_out]
-    type = Exodus
-    execute_on = 'TIMESTEP_END'
-  []
+[vtk]
+  type = VTK
+  #interval = 1
+[]
+#  [exodus_out]
+#    type = Exodus
+#    execute_on = 'TIMESTEP_END'
+#  []
 []

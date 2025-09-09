@@ -17,5 +17,8 @@
       <PDataArray type="Float64" Name="Points" NumberOfComponents="3"/>
     </PPoints>
     <Piece Source="neutronic_vtk_002_0.vtu"/>
+    <Piece Source="neutronic_vtk_002_1.vtu"/>
+    <Piece Source="neutronic_vtk_002_2.vtu"/>
+    <Piece Source="neutronic_vtk_002_3.vtu"/>
   </PUnstructuredGrid>
 </VTKFile>

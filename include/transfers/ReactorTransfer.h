@@ -22,7 +22,7 @@ class ReactorTransfer : public MultiAppCopyTransfer
 {
 public:
   static InputParameters validParams();
-  ReactorTransfer(const InputParameters & parameters);
-  
+  ReactorTransfer(const InputParameters &parameters);
+
   virtual void execute() override;
 };
