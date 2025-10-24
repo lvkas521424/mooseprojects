@@ -37,97 +37,23 @@ CoupledCalculator::CoupledCalculator(FEProblemBase & fe_problem,
 bool
 CoupledCalculator::executeFirst()
 {
-  std::cout << "\n====== CoupledCalculator: 开始首次耦合计算 ======" << std::endl;
-  std::cout << "最大固定点迭代次数: " << _fixed_point_max_its << std::endl;
-  std::cout << "最小固定点迭代次数: " << _fixed_point_min_its << std::endl;
-  std::cout << "固定点收敛容差: " << _fixed_point_tol << std::endl;
-  std::cout << "当前燃耗步: " << _burn_step << std::endl;
-
-  // 执行校正中子学计算
-  std::cout << "CoupledCalculator: 执行校正中子学计算..." << std::endl;
   _fe_problem.execMultiApps(LevelSet::EXEC_CORNEUTRONIC);
-
-  // 执行热工计算
-  std::cout << "CoupledCalculator: 执行热工计算..." << std::endl;
   _fe_problem.execMultiApps(LevelSet::EXEC_THERMAL);
-
-  std::cout << "====== CoupledCalculator: 首次耦合计算完成 ======\n" << std::endl;
-
   return true;
 }
 
 bool
 CoupledCalculator::executeSubsequent()
 {
-  // 检查多应用程序是否存在
-  bool has_neutronics = _fe_problem.hasMultiApp(_neutronics_app_name);
-  bool has_thermal = _fe_problem.hasMultiApp(_thermal_app_name);
-
-  if (!has_neutronics || !has_thermal)
-  {
-    std::cout << "WARNING: CoupledCalculator: 无法找到必要的多应用程序" << std::endl;
-    std::cout << "  中子学应用存在: " << has_neutronics << std::endl;
-    std::cout << "  热工应用存在: " << has_thermal << std::endl;
-    return false;
-  }
-
-  std::cout << "\n====== CoupledCalculator: 开始后续耦合计算 ======" << std::endl;
-  std::cout << "当前燃耗步: " << _burn_step << std::endl;
-  std::cout << "最大耦合迭代次数: " << _max_coupling_iterations << std::endl;
-  std::cout << "耦合收敛容差: " << _coupling_tolerance << std::endl;
-
-  // 耦合迭代
   Real temp_convergence = 1.0;
-  unsigned int iter = 0;
-
-  while (iter < _max_coupling_iterations && temp_convergence > _coupling_tolerance)
+  
+  for (unsigned int iter = 1; iter <= _max_coupling_iterations && temp_convergence > _coupling_tolerance; ++iter)
   {
-    // 记录迭代次数
-    iter++;
-    std::cout << "\nCoupledCalculator: 耦合迭代 #" << iter << std::endl;
-
-    // 执行中子学计算
-    std::cout << "  执行中子学计算..." << std::endl;
-    bool neutronics_success = _fe_problem.execMultiApps(LevelSet::EXEC_NEUTRONIC);
-    if (!neutronics_success)
-    {
-      std::cout << "  错误: 中子学计算失败!" << std::endl;
+    if (!_fe_problem.execMultiApps(LevelSet::EXEC_NEUTRONIC))
       return false;
-    }
-
-    // 执行热工计算
-    std::cout << "  执行热工计算..." << std::endl;
-    bool thermal_success = _fe_problem.execMultiApps(LevelSet::EXEC_THERMAL);
-    if (!thermal_success)
-    {
-      std::cout << "  错误: 热工计算失败!" << std::endl;
+    if (!_fe_problem.execMultiApps(LevelSet::EXEC_THERMAL))
       return false;
-    }
-
-    std::cout << "  当前收敛性: " << temp_convergence << std::endl;
   }
-
-  // 判断收敛结果
-  if (iter >= _max_coupling_iterations)
-  {
-    std::cout << "\nCoupledCalculator: 达到最大迭代次数 (" << _max_coupling_iterations
-              << "), 当前收敛性: " << temp_convergence << ", 目标: " << _coupling_tolerance
-              << std::endl;
-    if (_accept_on_max_iteration)
-    {
-      std::cout << "CoupledCalculator: 接受当前解" << std::endl;
-    }
-    else
-    {
-      std::cout << "CoupledCalculator: 警告 - 未达到收敛" << std::endl;
-    }
-  }
-  else
-  {
-    std::cout << "\nCoupledCalculator: 耦合迭代收敛! 迭代次数: " << iter << std::endl;
-  }
-
-  std::cout << "====== CoupledCalculator: 后续耦合计算完成 ======\n" << std::endl;
 
   return true;
 }

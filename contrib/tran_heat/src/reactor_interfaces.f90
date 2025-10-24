@@ -2,7 +2,7 @@
 ! Author: lvjiahui eba424@163.com
 ! Date: 2025-09-11 11:32:37
 ! LastEditors: lvjiahui eba424@163.com
-! LastEditTime: 2025-10-24 13:41:39
+! LastEditTime: 2025-10-24 14:21:29
 ! FilePath: /mooseprojects/contrib/tran_heat/src/reactor_interfaces.f90
 ! Description: 
 !
@@ -125,9 +125,9 @@ module reactor_interfaces
       ! 串行计算
       do i = 1, field_size
         call random_number(random)
-        power_field1(i) = 100.0D0 + 10 * random + 10 * times + rank * 5.0D0
+        power_field1(i) = 100.0D0 !+ 10 * random + 10 * times + rank * 5.0D0
         call random_number(random)
-        power_field2(i) = 500.0D0 + 10 * random + 10 * times + rank * 15.0D0
+        power_field2(i) = 500.0D0 !+ 10 * random + 10 * times + rank * 15.0D0
       end do
       
       ! MPI同步
@@ -221,8 +221,8 @@ module reactor_interfaces
       ! OpenMP并行计算
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i) SCHEDULE(STATIC)
       do i = 1, field_size
-         power_field1(i) = 100.0D0 + i * 10.0D0 + rank * 1000.0D0 + temperature_field(i)
-         power_field2(i) = 500.0D0 + i * 10.0D0 + rank * 1000.0D0 + temperature_field(i)
+         power_field1(i) = 100.0D0 !+ i * 10.0D0 + rank * 1000.0D0 + temperature_field(i)
+         power_field2(i) = 500.0D0 !+ i * 10.0D0 + rank * 1000.0D0 + temperature_field(i)
       end do
       !$OMP END PARALLEL DO
       

@@ -17,18 +17,8 @@
 #include "SystemBase.h"
 #include "MooseMesh.h"
 #include "LevelSetTypes.h"
-// #include "Parallel.h"
+#include "ReactorCouplingUserObject.h"
 #include "mpi.h"
-
-// 声明外部Fortran函数接口
-// extern "C"
-// {
-//   void b1_execute_3d(const int *mesh_dims,
-//                      double *power1,
-//                      double *power2,
-//                      double *temperature,
-//                      const int *size);
-// }
 
 registerMooseObject("mooseprojectsApp", NeutronicsMultiApp);
 
@@ -79,17 +69,11 @@ void NeutronicsMultiApp::executeB1Solver()
 
     auto &app = appProblemBase(0);
     const Parallel::Communicator &comm = app.comm();
-    // const Parallel::Communicator & comm = this->_communicator;
-    std::cout << "我是进程: " << this->_communicator.rank() << std::endl
-              << std::flush;
 
     // 检查变量是否存在
     if (!app.hasVariable(_power_var_name1) || !app.hasVariable(_power_var_name2) ||
         !app.hasVariable(_temperature_var_name))
         return;
-
-    // if (comm.rank() == 0)
-    std::cout << "MOOSE communicator: " << "( " << comm.rank() << " / " << comm.size() - 1 << " )..." << std::endl;
 
     // 获取MOOSE变量及其解向量
     auto &power_var = app.getVariable(0, _power_var_name1);
@@ -103,15 +87,16 @@ void NeutronicsMultiApp::executeB1Solver()
     Real time_step_size = _fe_problem.dt();
     int time_step_number = _fe_problem.timeStep();
     
-    std::cout << "当前时间: " << current_time << std::endl;
-    std::cout << "时间步长: " << time_step_size << std::endl;
-    std::cout << "时间步数: " << time_step_number << std::endl;
-
-    // if (_fe_problem.hasUserObject("coupling_control")) {
-    //     const auto& coupling_uo = _fe_problem.getUserObject<ReactorCouplingUserObject>("coupling_control");
-    //     unsigned int calc_type = coupling_uo.getCalcType();  // 需要添加此方法
-    //     std::cout << "从UserObject获取的计算类型: " << calc_type << std::endl;
-    // }
+    // 从 ReactorCouplingUserObject 获取计算参数
+    unsigned int burn_step = time_step_number;
+    if (!_coupling_userobject_name.empty() && _fe_problem.hasUserObject(_coupling_userobject_name))
+    {
+        const auto& coupling_uo = _fe_problem.getUserObject<ReactorCouplingUserObject>(_coupling_userobject_name);
+        burn_step = coupling_uo.getBurnStep();
+    }
+    
+    if (comm.rank() == 0)
+        std::cout << "  Solving neutronics (MPI=" << comm.size() << ")..." << std::endl;
 
     // 获取本地数据信息
     unsigned int power_local_size = power_solution.local_size();
@@ -125,23 +110,9 @@ void NeutronicsMultiApp::executeB1Solver()
     unsigned int original_power_local_size = power_local_size;
     unsigned int original_power_start_idx = power_start_idx;
     
-    // 增加 MPI_Allreduce 示例：计算所有进程的 power_local_size 总和
-    unsigned int global_power_local_size = 0;
-    MPI_Allreduce(&power_local_size, &global_power_local_size, 1, MPI_UNSIGNED, MPI_SUM, comm.get());
-    
-    std::cout << "Rank " << comm.rank() << ": Total power_local_size across all processes = "
-              << global_power_local_size << std::endl;
-
-    // 计算每个变量的实际大小（用于Fortran计算）
+    // 计算每个变量的实际大小
     power_local_size = power_local_size / num_variables;
     power_start_idx = power_start_idx / num_variables;
-
-    std::cout << "power_local_size: " << power_local_size << std::endl;
-    std::cout << "power_start_idx : " << power_start_idx << std::endl;
-    std::cout << "temp_local_size : " << temp_local_size << std::endl;
-    std::cout << "temp_start_idx  : " << temp_start_idx << std::endl;
-    std::cout << "original_power_local_size: " << original_power_local_size << std::endl;
-    std::cout << "original_power_start_idx : " << original_power_start_idx << std::endl;
 
     // 准备本地数据数组
     std::vector<double> local_power_data1(power_local_size, 0.0);
@@ -152,33 +123,24 @@ void NeutronicsMultiApp::executeB1Solver()
     for (unsigned int i = 0; i < temp_local_size; ++i)
         local_temperature_data[i] = temp_solution(temp_start_idx + i);
 
-    // === 调用Fortran并行计算：每个进程处理自己的本地数据 ===
-
+    // 调用Fortran并行计算
     int fortran_data_size = static_cast<int>(power_local_size);
-    std::cout << "fortran_data_size: " << fortran_data_size << std::endl;
-
     std::vector<int> mesh_dims_copy = _mesh_dims;
 
-    // MPI同步点1：确保所有进程同时开始Fortran计算
     MPI_Barrier(MPI_COMM_WORLD);
 
-    b1_execute_3d_mpi( // comm.get(), // 注释掉但保留逗号
+    b1_execute_3d_mpi(
         mesh_dims_copy.data(),
         local_power_data1.data(),
         local_power_data2.data(),
         local_temperature_data.data(),
         fortran_data_size);
 
-    // MPI同步点2：确保所有进程完成Fortran计算后再继续
     MPI_Barrier(MPI_COMM_WORLD);
 
-    // === 直接写回MOOSE解向量：使用原始索引范围 ===
-
+    // 写回MOOSE解向量
     unsigned int data1_idx = 0;
     unsigned int data2_idx = 0;
-
-    std::cout << "开始写回数据，原始范围: [" << original_power_start_idx
-              << " - " << original_power_start_idx + original_power_local_size - 1 << "]" << std::endl;
 
     for (unsigned int i = 0; i < original_power_local_size; ++i)
     {
@@ -190,8 +152,6 @@ void NeutronicsMultiApp::executeB1Solver()
             if (data1_idx < local_power_data1.size())
             {
                 power_solution.set(global_idx, local_power_data1[data1_idx]);
-                std::cout << "  设置 power1[" << global_idx << "] = " << local_power_data1[data1_idx]
-                          << " (data1_idx=" << data1_idx << ")" << std::endl;
                 data1_idx++;
             }
         }
@@ -200,39 +160,12 @@ void NeutronicsMultiApp::executeB1Solver()
             if (data2_idx < local_power_data2.size())
             {
                 power_solution.set(global_idx, local_power_data2[data2_idx]);
-                std::cout << "  设置 power2[" << global_idx << "] = " << local_power_data2[data2_idx]
-                          << " (data2_idx=" << data2_idx << ")" << std::endl;
                 data2_idx++;
             }
         }
     }
 
-    std::cout << "写回完成: power1使用了" << data1_idx << "个值, power2使用了" << data2_idx << "个值" << std::endl;
-
     power_solution.close();
-
-    if (comm.rank() == 0)
-        std::cout << "B1并行计算完成！" << std::endl;
-
-    // 验证真正的并行状态
-    int world_rank, world_size;
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-    std::cout << " MULTIAPP : === 进程分配验证 ===" << std::endl;
-    std::cout << " MULTIAPP :   全局MPI: rank=" << world_rank << ", size=" << world_size << std::endl;
-    std::cout << " MULTIAPP :   MOOSE MultiApp: rank=" << comm.rank() << ", size=" << comm.size() << std::endl;
-    std::cout << " MULTIAPP :   数据分布: 起始=" << power_start_idx << ", 大小=" << power_local_size << std::endl;
-
-    if (comm.size() == 1)
-    {
-        std::cout << "WARNING: MultiApp运行在串行模式！" << std::endl;
-    }
-    // power_var.sys().update();
-
-
-
-
 }
 
 bool NeutronicsMultiApp::solveStep(Real dt, Real target_time, bool auto_advance)

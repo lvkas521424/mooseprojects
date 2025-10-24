@@ -21,40 +21,14 @@ NeutronicsCalculator::NeutronicsCalculator(FEProblemBase & fe_problem,
 void
 NeutronicsCalculator::executeFirst()
 {
-  // 检查中子学多应用程序是否存在
-  if (!_fe_problem.hasMultiApp(_neutronics_app_name))
-  {
-    std::cout << "WARNING: NeutronicsCalculator: Can't find neutronics multiapp '"
-              << _neutronics_app_name << "'" << std::endl;
-    return;
-  }
-
-  std::cout << "NeutronicsCalculator: 执行首次中子学计算, 当前燃耗步=" << _burn_step
-            << std::endl;
-
-  // 执行中子学应用
-  _fe_problem.execMultiApps(LevelSet::EXEC_NEUTRONIC);
-
-  std::cout << "NeutronicsCalculator: 首次中子学计算完成" << std::endl;
+  if (_fe_problem.hasMultiApp(_neutronics_app_name))
+    _fe_problem.execMultiApps(LevelSet::EXEC_NEUTRONIC);
 }
 
 void
 NeutronicsCalculator::executeSubsequent()
 {
-  // 检查中子学多应用程序是否存在
-  if (!_fe_problem.hasMultiApp(_neutronics_app_name))
-  {
-    std::cout << "WARNING: NeutronicsCalculator: Can't find neutronics multiapp '"
-              << _neutronics_app_name << "'" << std::endl;
-    return;
-  }
-
-  std::cout << "NeutronicsCalculator: 执行后续中子学计算, 当前燃耗步=" << _burn_step
-            << std::endl;
-
-  // 执行中子学应用（校正中子学）
-  _fe_problem.execMultiApps(LevelSet::EXEC_CORNEUTRONIC);
-
-  std::cout << "NeutronicsCalculator: 后续中子学计算完成" << std::endl;
+  if (_fe_problem.hasMultiApp(_neutronics_app_name))
+    _fe_problem.execMultiApps(LevelSet::EXEC_CORNEUTRONIC);
 }
 

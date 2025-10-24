@@ -705,6 +705,16 @@
  /home/lvkas/projects/moose/framework/build/header_symlinks/SolutionInvalidity.h \
  /home/lvkas/projects/moose/framework/build/header_symlinks/SolutionInvalidityRegistry.h \
  /home/lvkas/projects/mooseprojects/build/header_symlinks/LevelSetTypes.h \
+ /home/lvkas/projects/mooseprojects/build/header_symlinks/ReactorCouplingUserObject.h \
+ /home/lvkas/projects/moose/framework/build/header_symlinks/GeneralUserObject.h \
+ /home/lvkas/projects/moose/framework/build/header_symlinks/UserObject.h \
+ /home/lvkas/projects/moose/framework/build/header_symlinks/DistributionInterface.h \
+ /home/lvkas/projects/moose/framework/build/header_symlinks/MeshDisplacedInterface.h \
+ /home/lvkas/projects/moose/framework/build/header_symlinks/ScalarCoupleable.h \
+ /home/lvkas/projects/moose/framework/build/header_symlinks/SamplerInterface.h \
+ /home/lvkas/projects/mooseprojects/build/header_symlinks/NeutronicsCalculator.h \
+ /home/lvkas/projects/mooseprojects/build/header_symlinks/CoupledCalculator.h \
+ /home/lvkas/projects/mooseprojects/build/header_symlinks/FortranInterface.h \
  /home/lvkas/projects/mooseprojects/src/multiapps/ThermalMultiApp.C \
  /home/lvkas/projects/mooseprojects/build/header_symlinks/ThermalMultiApp.h
 /home/lvkas/projects/moose/framework/include/base/MooseConfig.h:
@@ -1412,5 +1422,15 @@
 /home/lvkas/projects/moose/framework/build/header_symlinks/SolutionInvalidity.h:
 /home/lvkas/projects/moose/framework/build/header_symlinks/SolutionInvalidityRegistry.h:
 /home/lvkas/projects/mooseprojects/build/header_symlinks/LevelSetTypes.h:
+/home/lvkas/projects/mooseprojects/build/header_symlinks/ReactorCouplingUserObject.h:
+/home/lvkas/projects/moose/framework/build/header_symlinks/GeneralUserObject.h:
+/home/lvkas/projects/moose/framework/build/header_symlinks/UserObject.h:
+/home/lvkas/projects/moose/framework/build/header_symlinks/DistributionInterface.h:
+/home/lvkas/projects/moose/framework/build/header_symlinks/MeshDisplacedInterface.h:
+/home/lvkas/projects/moose/framework/build/header_symlinks/ScalarCoupleable.h:
+/home/lvkas/projects/moose/framework/build/header_symlinks/SamplerInterface.h:
+/home/lvkas/projects/mooseprojects/build/header_symlinks/NeutronicsCalculator.h:
+/home/lvkas/projects/mooseprojects/build/header_symlinks/CoupledCalculator.h:
+/home/lvkas/projects/mooseprojects/build/header_symlinks/FortranInterface.h:
 /home/lvkas/projects/mooseprojects/src/multiapps/ThermalMultiApp.C:
 /home/lvkas/projects/mooseprojects/build/header_symlinks/ThermalMultiApp.h:

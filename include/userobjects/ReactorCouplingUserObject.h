@@ -34,6 +34,16 @@ public:
   virtual void execute() override;
   virtual void finalize() override {};
 
+  /**
+   * 公共访问接口：获取计算类型
+   */
+  unsigned int getCalcType() const { return _calc_type; }
+  
+  /**
+   * 公共访问接口：获取当前燃耗步
+   */
+  unsigned int getBurnStep() const { return _burn_step; }
+
 protected:
   /**
    * 执行第一个燃耗步

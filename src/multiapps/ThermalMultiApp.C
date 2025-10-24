@@ -55,6 +55,9 @@ void ThermalMultiApp::executeThermalSolver()
     return;
 
   auto &app = appProblemBase(0);
+  
+  if (app.comm().rank() == 0)
+    std::cout << "  Solving thermal..." << std::endl;
 
   // 获取功率场变量
   auto &power_var = app.getVariable(0, _power_var_name);

@@ -170,7 +170,7 @@
   type = Transient
   
   start_time = 0
-  end_time   = 1        
+  end_time   = 3        
   dt = 1.00          
   
   # num_steps = 10          
