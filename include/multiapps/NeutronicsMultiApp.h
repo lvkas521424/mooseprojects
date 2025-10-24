@@ -1,8 +1,24 @@
-/****************************************************************/
-/* NeutronicsMultiApp.h                                         */
-/* 简化版中子学多应用头文件                                         */
-/* 添加了MPI并行支持                                             */
-/****************************************************************/
+/*
+ * @Author      : lvjiahui eba424@163.com
+ * @Date        : Do not edit
+ * @LastEditors : lvjiahui eba424@163.com
+ * @LastEditTime: 2025-09-16 14:31:01
+ * @FilePath    : Do not edit
+ * @Description : 
+ * 
+ * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
+ */
+/*
+ * @Author: lvjiahui eba424@163.com
+ * @Date: 2025-09-11 11:32:37
+ * @LastEditors: lvjiahui eba424@163.com
+ * @LastEditTime: 2025-09-16 14:30:32
+ * @FilePath: /mooseprojects/include/multiapps/NeutronicsMultiApp.h
+ * @Description: 
+ * 
+ * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
+ */
+
 
 #pragma once
 

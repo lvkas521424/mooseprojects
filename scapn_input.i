@@ -1,8 +1,9 @@
+!include mesh.i
 [Mesh]
   [gmg]
     type = GeneratedMeshGenerator  
     dim = 3
-    nx = 3
+    nx = ${nx_value}
     ny = 4
     nz = 5
   []

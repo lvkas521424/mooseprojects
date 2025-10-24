@@ -6,7 +6,7 @@
 /* and burnup step management in reactor simulations.           */
 /*                                                              */
 /* Created: Mar 19, 2025                                        */
-/* Last Modified: Mar 19, 2025                                  */
+/* Last Modified: Oct 13, 2025 - 模块化重构                      */
 /****************************************************************/
 
 #pragma once
@@ -15,11 +15,10 @@
 #include "FEProblem.h"
 #include "MultiApp.h"
 #include "MultiAppTransfer.h"
-
-extern "C"
-{
-  void update_burnup_step(int step, int max_steps);
-}
+#include "NeutronicsCalculator.h"
+#include "CoupledCalculator.h"
+#include "FortranInterface.h"
+#include <memory>
 
 class ReactorCouplingUserObject : public GeneralUserObject
 {
@@ -37,19 +36,6 @@ public:
 
 protected:
   /**
-   * 执行中子学计算
-   */
-  void executefirstNeutronics();
-  void executesubsquentNeutronics();
-
-  /**
-   * 执行耦合计算
-   * @return 是否收敛
-   */
-  bool executefirstCoupled();
-  bool executesubsquentCoupled();
-
-  /**
    * 执行第一个燃耗步
    * @return 计算是否成功
    */
@@ -60,17 +46,6 @@ protected:
    * @return 计算是否成功
    */
   bool executeSubsequentStep();
-
-  /**
-   * 更新Fortran程序中的燃耗步
-   */
-  void updateFortranBurnupStep();
-
-  /**
-   * 获取当前时间步数
-   * @return 当前时间步数
-   */
-  unsigned int getCurrentTimeStep();
 
 protected:
   /// 计算类型: 1-仅中子学, 2-耦合计算
@@ -102,4 +77,9 @@ protected:
 
   /// FE问题引用
   FEProblemBase &_fe_problem;
+
+  /// 计算模块（采用组合模式）
+  std::unique_ptr<NeutronicsCalculator> _neutronics_calculator;
+  std::unique_ptr<CoupledCalculator> _coupled_calculator;
+  std::unique_ptr<FortranInterface> _fortran_interface;
 };

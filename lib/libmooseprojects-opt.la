@@ -17,7 +17,7 @@ old_library=''
 inherited_linker_flags=' -fopenmp'
 
 # Libraries that this one depends upon.
-dependency_libs=' -L/home/lvjiahui/miniforge/envs/moose/wasp/lib /home/lvjiahui/projects/moose/modules/module_loader/lib/libmodule_loader_with-opt.la /home/lvjiahui/projects/moose/framework/lib/libYourApp-opt.la -lstdc++fs -lwaspcore -lwaspddi -lwaspexpr -lwasphalite -lwasphit -lwasphive -lwaspjson -lwasplsp -lwaspsiren -lwaspson'
+dependency_libs=' -L/home/lvkas/moose_environment/miniforge/envs/moose/wasp/lib /home/lvkas/projects/moose/modules/module_loader/lib/libmodule_loader_with-opt.la -lstdc++fs -lwaspcore -lwaspddi -lwaspexpr -lwasphalite -lwasphit -lwasphive -lwaspjson -lwasplsp -lwaspplot -lwaspsiren -lwaspson'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/home/lvjiahui/projects/mooseprojects_two_input/lib'
+libdir='/home/lvkas/projects/mooseprojects/lib'

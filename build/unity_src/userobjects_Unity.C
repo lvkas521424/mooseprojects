@@ -1,2 +1,5 @@
 
-#include"/home/lvjiahui/projects/mooseprojects_two_input/src/userobjects/ReactorCouplingUserObject.C"
+#include"/home/lvkas/projects/mooseprojects/src/userobjects/CoupledCalculator.C"
+#include"/home/lvkas/projects/mooseprojects/src/userobjects/FortranInterface.C"
+#include"/home/lvkas/projects/mooseprojects/src/userobjects/NeutronicsCalculator.C"
+#include"/home/lvkas/projects/mooseprojects/src/userobjects/ReactorCouplingUserObject.C"

@@ -43,8 +43,8 @@
     execute_on = 'NEUTRONIC PRENEUTRONIC CORNEUTRONIC'
     
     # MPI进程分配设置
-    # max_procs_per_app = 20          # 分配给每个子应用的最大进程数
-    min_procs_per_app = 4           # 分配给每个子应用的最小进程数
+    max_procs_per_app = 20          # 分配给每个子应用的最大进程数
+    # min_procs_per_app = 4           # 分配给每个子应用的最小进程数
     
     # execute_on = 'MULTIAPP_FIXED_POINT_BEGIN' 
   []
@@ -58,7 +58,7 @@
     temperature_var_name = temperature  
     execute_on = 'THERMAL'            
     # execute_on = 'MULTIAPP_FIXED_POINT_BEGIN'
-    max_procs_per_app = 2          # 分配给每个子应用的最大进程数
+    max_procs_per_app = 1          # 分配给每个子应用的最大进程数
     # min_procs_per_app = 1           # 分配给每个子应用的最小进程数
   []
 []
@@ -170,7 +170,7 @@
   type = Transient
   
   start_time = 0
-  end_time   = 3        
+  end_time   = 1        
   dt = 1.00          
   
   # num_steps = 10          
@@ -187,6 +187,7 @@
   # fixed_point_min_its = 3
   # fixed_point_abs_tol = 1e-6
   # accept_on_max_fixed_point_iteration = true
+  num_threads = 2
 []
 
 [Postprocessors]
@@ -231,10 +232,10 @@
 [Outputs]
   exodus = true
   csv = true
-[vtk]
-  type = VTK
-  #interval = 1
-[]
+#  [vtk]
+#    type = VTK
+#    #interval = 1
+#  []
 #  [exodus_out]
 #    type = Exodus
 #    execute_on = 'TIMESTEP_END'

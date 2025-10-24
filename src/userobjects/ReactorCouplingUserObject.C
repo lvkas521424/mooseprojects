@@ -1,3 +1,13 @@
+/*
+ * @Author      : lvjiahui eba424@163.com
+ * @Date        : Do not edit
+ * @LastEditors : lvjiahui eba424@163.com
+ * @LastEditTime: 2025-10-14 14:24:06
+ * @FilePath    : Do not edit
+ * @Description : 
+ * 
+ * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
+ */
 /****************************************************************/
 /* ReactorCouplingUserObject                                    */
 /* A Reactor Neutronics-Thermal Coupling UserObject Module      */
@@ -7,7 +17,7 @@
 /* reactor simulations.                                         */
 /*                                                              */
 /* Created: Mar 19, 2025                                        */
-/* Last Modified: Mar 19, 2025                                  */
+/* Last Modified: Oct 13, 2025 - 模块化重构                      */
 /****************************************************************/
 
 #include "ReactorCouplingUserObject.h"
@@ -18,6 +28,8 @@
 #include "LevelSetTypes.h"
 #include "ReactorTransfer.h"
 #include "NeutronicsMultiApp.h"
+#include <memory>
+
 
 registerMooseObject("mooseprojectsApp", ReactorCouplingUserObject);
 
@@ -67,6 +79,30 @@ ReactorCouplingUserObject::ReactorCouplingUserObject(const InputParameters &para
   if (_burn_step > _max_burn_steps)
     mooseError("ReactorCouplingUserObject: INITIAL BURNUP STEP (", _burn_step,
                ") CANNOT BE GREATER THAN OR EQUAL TO MAX BURNUP STEPS (", _max_burn_steps, ")");
+
+  // 初始化计算模块（组合模式）
+  _neutronics_calculator = std::make_unique<NeutronicsCalculator>(
+      _fe_problem, _neutronics_app_name, _burn_step);
+
+  _coupled_calculator = std::make_unique<CoupledCalculator>(_fe_problem,
+                                                             _neutronics_app_name,
+                                                             _thermal_app_name,
+                                                             _burn_step,
+                                                             _max_coupling_iterations,
+                                                             _coupling_tolerance,
+                                                             _fixed_point_max_its,
+                                                             _fixed_point_min_its,
+                                                             _fixed_point_tol,
+                                                             _accept_on_max_iteration);
+
+  _fortran_interface = std::make_unique<FortranInterface>(_burn_step, _max_burn_steps);
+
+  std::cout << "\n====== ReactorCouplingUserObject: 模块化构造完成 ======" << std::endl;
+  std::cout << "已创建模块: " << std::endl;
+  std::cout << "  - 中子学计算模块 (NeutronicsCalculator)" << std::endl;
+  std::cout << "  - 耦合计算模块 (CoupledCalculator)" << std::endl;
+  std::cout << "  - Fortran接口模块 (FortranInterface)" << std::endl;
+  std::cout << "====================================================\n" << std::endl;
 }
 
 void ReactorCouplingUserObject::initialize()
@@ -114,181 +150,52 @@ void ReactorCouplingUserObject::execute()
   _burn_step++;
 }
 
-// 执行第一个燃耗步
+// 执行第一个燃耗步（调用模块）
 bool ReactorCouplingUserObject::executeFirstStep()
 {
-  std::cout << "ReactorCouplingUserObject: EXECUTE FIRST BURNUP STEP" << std::endl;
-  std::cout << "CALCULATION TYPE: " << _calc_type << std::endl;
+  std::cout << "\n====== ReactorCouplingUserObject: 执行首次燃耗步 ======" << std::endl;
+  std::cout << "计算类型: " << _calc_type << std::endl;
+
+  // 更新Fortran燃耗步信息
+  _fortran_interface->updateBurnupStep();
 
   // 根据计算类型执行对应的计算
   if (_calc_type == 1) // 仅中子学
   {
-    executefirstNeutronics();
+    std::cout << "调用中子学计算模块..." << std::endl;
+    _neutronics_calculator->executeFirst();
     return true;
   }
   else if (_calc_type == 2) // 耦合计算
   {
-    return executefirstCoupled();
+    std::cout << "调用耦合计算模块..." << std::endl;
+    return _coupled_calculator->executeFirst();
   }
 
   return false;
 }
 
-// 执行后续燃耗步
+// 执行后续燃耗步（调用模块）
 bool ReactorCouplingUserObject::executeSubsequentStep()
 {
-  std::cout << "ReactorCouplingUserObject: EXECUTE SUBSEQUENT BURNUP STEP" << std::endl;
+  std::cout << "\n====== ReactorCouplingUserObject: 执行后续燃耗步 ======" << std::endl;
+
+  // 更新Fortran燃耗步信息
+  _fortran_interface->updateBurnupStep();
 
   // 根据计算类型执行对应的计算
   if (_calc_type == 1) // 仅中子学
   {
-    executesubsquentNeutronics();
+    std::cout << "调用中子学计算模块..." << std::endl;
+    _neutronics_calculator->executeSubsequent();
     return true;
   }
   else if (_calc_type == 2) // 耦合计算
   {
-    return executesubsquentCoupled();
+    std::cout << "调用耦合计算模块..." << std::endl;
+    return _coupled_calculator->executeSubsequent();
   }
 
   return false;
 }
 
-// 执行第一次中子学计算
-void ReactorCouplingUserObject::executefirstNeutronics()
-{
-  // 检查中子学多应用程序是否存在
-  if (!_fe_problem.hasMultiApp(_neutronics_app_name))
-  {
-    std::cout << "WARNING: ReactorCouplingUserObject: Can't find neutronics multiapp '" << _neutronics_app_name << "'" << std::endl;
-    return;
-  }
-
-  std::cout << "ReactorCouplingUserObject: EXECUTE NEUTRONICS, CURRENT BURNUP STEP=" << _burn_step << std::endl;
-
-  // 准备中子学应用程序列表，用于选择性执行
-  std::vector<std::string> neutronics_apps = {_neutronics_app_name};
-
-  // 更新Fortran程序中的燃耗步信息
-  updateFortranBurnupStep();
-
-  std::cout << "UserObject进程 " << processor_id() << " 执行中子学计算" << std::endl;
-  // 执行中子学应用
-  _fe_problem.execMultiApps(LevelSet::EXEC_NEUTRONIC);
-
-  // 触发后处理器计算和输出
-  //_fe_problem.execute(EXEC_TIMESTEP_END);
-  //_fe_problem.outputStep(EXEC_TIMESTEP_END);
-}
-
-// 执行后续中子学计算
-void ReactorCouplingUserObject::executesubsquentNeutronics()
-{
-  // 检查中子学多应用程序是否存在
-  if (!_fe_problem.hasMultiApp(_neutronics_app_name))
-  {
-    std::cout << "WARNING: ReactorCouplingUserObject: Can't find neutronics multiapp '" << _neutronics_app_name << "'" << std::endl;
-    return;
-  }
-
-  std::cout << "ReactorCouplingUserObject: EXECUTE NEUTRONICS, CURRENT BURNUP STEP=" << _burn_step << std::endl;
-
-  // 准备中子学应用程序列表，用于选择性执行
-  std::vector<std::string> neutronics_apps = {_neutronics_app_name};
-
-  // 更新Fortran程序中的燃耗步信息
-  updateFortranBurnupStep();
-
-  std::cout << "UserObject进程 " << processor_id() << " 执行中子学计算" << std::endl;
-  // 执行中子学应用
-  //_fe_problem.execMultiApps(LevelSet::EXEC_PRENEUTRONIC);
-
-  _fe_problem.execMultiApps(LevelSet::EXEC_CORNEUTRONIC);
-}
-
-// 执行第一次核热耦合计算
-bool ReactorCouplingUserObject::executefirstCoupled()
-{
-
-  std::cout << "\n====== 开始固定点迭代 ======" << std::endl;
-  std::cout << "最大迭代次数: " << _fixed_point_max_its << std::endl;
-  std::cout << "最小迭代次数: " << _fixed_point_min_its << std::endl;
-  std::cout << "收敛容差: " << _fixed_point_tol << std::endl;
-
-  _fe_problem.execMultiApps(LevelSet::EXEC_CORNEUTRONIC);
-  std::cout << "ReactorCouplingUserObject: EXECUTE Fixed Point Iteration..." << std::endl;
-  _fe_problem.execMultiApps(LevelSet::EXEC_THERMAL);
-
-  std::cout << "====== 固定点迭代完成 ======\n"
-            << std::endl;
-
-  return true;
-}
-
-// 执行后续核热耦合计算
-bool ReactorCouplingUserObject::executesubsquentCoupled()
-{
-  // 检查多应用程序是否存在
-  bool has_neutronics = _fe_problem.hasMultiApp(_neutronics_app_name);
-  bool has_thermal = _fe_problem.hasMultiApp(_thermal_app_name);
-
-  if (!has_neutronics || !has_thermal)
-  {
-    std::cout << "WARNING: ReactorCouplingUserObject: Can't find necessary multiapps" << std::endl;
-    return false;
-  }
-
-  // 准备特定多应用程序名称列表，用于选择性执行
-  std::vector<std::string> neutronics_apps = {_neutronics_app_name};
-  std::vector<std::string> thermal_apps = {_thermal_app_name};
-
-  // 耦合迭代
-  Real temp_convergence = 1.0;
-  unsigned int iter = 0;
-
-  while (iter < _max_coupling_iterations && temp_convergence > _coupling_tolerance)
-  {
-    // 记录迭代次数
-    iter++;
-    std::cout << "ReactorCouplingUserObject: 耦合迭代次数=" << iter << std::endl;
-
-    std::cout << "EXECUTE NEUTRONICS..." << std::endl;
-    bool neutronics_success = _fe_problem.execMultiApps(LevelSet::EXEC_NEUTRONIC);
-    if (!neutronics_success)
-    {
-      std::cout << "NEUTRONICS EXECUTION FAILED!" << std::endl;
-      return false;
-    }
-
-    std::cout << "EXECUTE THERMAL..." << std::endl;
-    bool thermal_success = _fe_problem.execMultiApps(LevelSet::EXEC_THERMAL);
-    if (!thermal_success)
-    {
-      std::cout << "THERMAL EXECUTION FAILED!" << std::endl;
-      return false;
-    }
-  }
-
-  // 判断是否达到最大迭代次数
-  if (iter >= _max_coupling_iterations)
-  {
-    std::cout << "ReactorCouplingUserObject: MAX ITERATIONS REACHED (" << _max_coupling_iterations << "), BUT CONVERGENCE NOT REACHED (current: " << temp_convergence << ", target: " << _coupling_tolerance << ")" << std::endl;
-    return true;
-  }
-
-  return true;
-}
-
-// 更新Fortran程序中的燃耗步信息
-void ReactorCouplingUserObject::updateFortranBurnupStep()
-{
-  std::cout << "Passing burnup step information to Fortran program" << std::endl;
-
-  // 创建本地副本
-  int burn_step_copy = static_cast<int>(_burn_step);
-  int max_steps_copy = static_cast<int>(_max_burn_steps);
-
-  // 调用Fortran接口，使用本地变量
-  update_burnup_step(burn_step_copy, max_steps_copy);
-
-  std::cout << "Fortran program burnup step updated successfully" << std::endl;
-}
